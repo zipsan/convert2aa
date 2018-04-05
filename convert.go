@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"image"
+	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -58,9 +59,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		HTMLTags := make([]byte, 0, maxsize)
 		HTMLTags = append(HTMLTags, byteHeadString...)
 
+		// convert image to AA
 		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 			for x := bounds.Min.X; x < bounds.Max.X; x++ {
-				r, g, b, _ := resizedImg.At(x, y).RGBA()
+				r, g, b, _ := color.RGBAModel.Convert(resizedImg.At(x, y)).RGBA()
 				byteSpanString := []byte(
 					fmt.Sprintf(
 						TagString,
