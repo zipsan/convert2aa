@@ -30,27 +30,53 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		HTMLTags := "<div id=\"convert2aa\"><pre style=\"font: 10px/5px monospace; font-family: 'Courier New', 'Monospace';letter-spacing: -1px;\">"
-		width, height := uint(float64(img.Bounds().Max.X)*0.1), uint(float64(img.Bounds().Max.Y)*0.1)
+		// image width and height resized the image
+		width, height := uint(float64(img.Bounds().Max.X)*0.2), uint(float64(img.Bounds().Max.Y)*0.2)
+
+		// resized image object
 		resizedImg := resize.Resize(width, height, img, resize.Lanczos3)
 		bounds := resizedImg.Bounds()
+
+		// HTMLTag String definitions
+		HeadString := "<div id=\"convert2aa\"><pre style=\"font: 10px/5px monospace; font-family: 'Courier New', 'Monospace';letter-spacing: -1px;\">"
+		ColorString := "#%s%s%s"
+		TagString := "<span style=\"color:%s\">■</span>"
+		FootString := "</pre></div>"
+		BrString := "<br />"
+
+		byteHeadString := []byte(HeadString)
+		byteFootString := []byte(FootString)
+		byteBrString := []byte(BrString)
+
+		// generate HTMLTag bytesarray object
+		// faster than joining strings
+		maxsize :=
+			len(HeadString) + // header
+				bounds.Min.X*bounds.Min.Y*(len(ColorString)+len(TagString)) + //tag + colortag
+				bounds.Min.Y*len(BrString) + // br
+				len(FootString) // footer
+		HTMLTags := make([]byte, 0, maxsize)
+		HTMLTags = append(HTMLTags, byteHeadString...)
+
 		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 			for x := bounds.Min.X; x < bounds.Max.X; x++ {
 				r, g, b, _ := resizedImg.At(x, y).RGBA()
-				colorTag := fmt.Sprintf(
-					"#%s%s%s\n",
-					fmt.Sprintf("%02x", uint8(r)),
-					fmt.Sprintf("%02x", uint8(g)),
-					fmt.Sprintf("%02x", uint8(b)),
+				byteSpanString := []byte(
+					fmt.Sprintf(
+						TagString,
+						fmt.Sprintf(
+							ColorString,
+							fmt.Sprintf("%02x", uint8(r)),
+							fmt.Sprintf("%02x", uint8(g)),
+							fmt.Sprintf("%02x", uint8(b)),
+						),
+					),
 				)
-				spanTag := fmt.Sprintf(
-					"<span style=\"color:%s\">■</span>", colorTag,
-				)
-				HTMLTags += spanTag
+				HTMLTags = append(HTMLTags, byteSpanString...)
 			}
-			HTMLTags += "<br />"
+			HTMLTags = append(HTMLTags, byteBrString...)
 		}
-		HTMLTags += "</pre></div>"
+		HTMLTags = append(HTMLTags, byteFootString...)
 
 		type Response struct {
 			HTMLTag string `json:"html"`
