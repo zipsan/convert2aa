@@ -41,7 +41,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		// HTMLTag String definitions
 		HeadString := "<div id=\"convert2aa\"><pre style=\"font: 10px/5px monospace; font-family: 'Courier New', 'Monospace';letter-spacing: -1px;\">"
 		ColorString := "#%s%s%s"
-		TagString := "<span style=\"color:%s\">■</span>"
+		TagString := "<span style=\"color:%s\">#</span>"
 		FootString := "</pre></div>"
 		BrString := "<br />"
 
